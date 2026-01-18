@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS AR SCANNER</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { background-color: #0f172a; color: #00ffcc; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .btn { background: linear-gradient(45deg, #00ffcc, #00aaff); border: none; padding: 15px 30px; color: #000; font-weight: bold; border-radius: 25px; cursor: pointer; margin: 10px; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 0 15px rgba(0, 255, 204, 0.5); }
+        h1 { text-shadow: 0 0 10px rgba(0, 255, 204, 0.8); }
+        #preview { max-width: 90%; max-height: 300px; margin-top: 20px; border: 2px solid #00ffcc; display: none; }
+    </style>
+</head>
+<body>
+    <h1>NEXUS VISUALIZER</h1>
+    <p>Scanner de Entorno Activo</p>
+    
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
+    <button class="btn" onclick="document.getElementById('cameraInput').click()">📸 Activar Escáner</button>
+    
+    <input type="text" id="promptInput" placeholder="Ej: Sofá estilo Cyberpunk..." style="padding: 10px; margin: 10px; width: 80%; border-radius: 10px; border: 1px solid #00ffcc; background: #000; color: #fff;">
+    
+    <img id="preview" src="" alt="Preview">
+    <button class="btn" id="sendBtn" style="display:none" onclick="sendData()">⚡ PROCESAR EN NEXUS</button>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        const input = document.getElementById('cameraInput');
+        const preview = document.getElementById('preview');
+        const sendBtn = document.getElementById('sendBtn');
+        let base64Image = "";
+
+        input.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                base64Image = reader.result;
+                preview.src = base64Image;
+                preview.style.display = "block";
+                sendBtn.style.display = "block";
+            }
+            reader.readAsDataURL(file);
+        });
+
+        function sendData() {
+            const prompt = document.getElementById('promptInput').value;
+            if(!prompt) { alert("Describe qué quieres construir."); return; }
+            
+            // Enviamos datos al Bot
+            tg.sendData(JSON.stringify({
+                action: "nexus_render",
+                image: base64Image,
+                request: prompt
+            }));
+            tg.close();
+        }
+    </script>
+</body>
+</html>
